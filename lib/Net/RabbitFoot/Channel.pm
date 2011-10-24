@@ -34,7 +34,22 @@ BEGIN {
         };
     }
 
-    for my $method (qw(publish ack recover reject)) {
+    for my $method (qw(publish)) {
+        no strict 'refs';
+        *{__PACKAGE__ . '::' . $method} = sub {
+            my $self = shift;
+            my %args = @_;
+
+            my $cb = Coro::rouse_cb;
+            $args{on_drain} = sub {$cb->();},
+
+            $self->{arc}->$method(%args);
+            Coro::rouse_wait;
+            return $self;
+        };
+    }
+
+    for my $method (qw(ack recover reject)) {
         no strict 'refs';
         *{__PACKAGE__ . '::' . $method} = sub {
             my $self = shift;
