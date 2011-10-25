@@ -9,7 +9,7 @@ use Coro::AnyEvent;
 
 use Net::RabbitFoot::Channel;
 
-our $VERSION = '1.0301';
+our $VERSION = '1.0302';
 
 BEGIN {
     for my $method (qw(connect close)) {

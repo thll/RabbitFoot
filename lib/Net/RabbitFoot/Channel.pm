@@ -17,6 +17,7 @@ BEGIN {
         declare_queue bind_queue unbind_queue purge_queue delete_queue
         consume cancel get qos
         select_tx commit_tx rollback_tx
+        publish
     )) {
         no strict 'refs';
         *{__PACKAGE__ . '::' . $method} = sub {
@@ -31,21 +32,6 @@ BEGIN {
             my ($is_success, @responses) = Coro::rouse_wait;
             die @responses if !$is_success;
             return $responses[0];
-        };
-    }
-
-    for my $method (qw(publish)) {
-        no strict 'refs';
-        *{__PACKAGE__ . '::' . $method} = sub {
-            my $self = shift;
-            my %args = @_;
-
-            my $cb = Coro::rouse_cb;
-            $args{on_drain} = sub {$cb->();},
-
-            $self->{arc}->$method(%args);
-            Coro::rouse_wait;
-            return $self;
         };
     }
 
